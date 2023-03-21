@@ -1,0 +1,191 @@
+Sub Module2Challenge():
+
+    '-------------------------
+    'LOOP THROUGH ALL SHEETS
+    '-------------------------
+For Each ws In Worksheets
+    
+    
+'define variables
+LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+Dim TotalStockVol As Double
+TotalStockVol = 0
+
+Dim SumOpening As Double
+SumOpening = 0
+
+Dim SumClosing As Double
+SumClosing = 0
+
+Dim YearlyChange As Double
+
+Dim PercentChange As Double
+
+Dim TickerCount As Integer
+TickerCount = 0
+
+
+Dim Summary_Table_Row As Integer
+Summary_Table_Row = 2
+
+
+
+
+'create headers for Ticker, Yearly Change, Percent Change, total Stock Volume
+ws.Cells(1, 9).Value = "Ticker"
+ws.Cells(1, 10).Value = "Yearly Change"
+ws.Cells(1, 11).Value = "Percent Change"
+ws.Cells(1, 12).Value = "Total Stock Volume"
+
+
+
+
+    'loop through column A and look for a change in ticker
+    For i = 2 To LastRow
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            'MsgBox (Cells(i, 1).Value) -- testing it out to make sure it works
+        
+            'set ticker variable
+            Ticker = ws.Cells(i, 1).Value
+            
+            'Add to the ticker count
+            TickerCount = TickerCount + 1
+            
+            'add to the total stock volume for a ticker
+            TotalStockVol = TotalStockVol + ws.Cells(i, 7).Value
+            
+            'add to the sum of opening prices for a ticker
+            SumOpening = SumOpening + ws.Cells(i, 3).Value
+            
+            'add to the sum of the closing prices for a ticker
+            SumClosing = SumClosing + ws.Cells(i, 6).Value
+            
+            'print ticker to summary table
+            ws.Range("I" & Summary_Table_Row).Value = Ticker
+            
+            'print ticker total stock volume to summary table
+            ws.Range("L" & Summary_Table_Row).Value = TotalStockVol
+            
+            'Create a yearly change variable
+            YearlyChange = SumClosing - SumOpening
+            
+            'Print yearly change to summary table
+            ws.Range("J" & Summary_Table_Row).Value = YearlyChange
+            
+            'change style to currency
+            ws.Range("J" & Summary_Table_Row).Style = "Currency"
+            
+            'Create a percentage change variable
+            PercentChange = (YearlyChange / (SumOpening / TickerCount)) * 100
+            
+            'Print percentage change on summary table
+            ws.Range("K" & Summary_Table_Row).Value = PercentChange
+            
+        
+            'add one to the summary table row so next ticker moves down in table
+            Summary_Table_Row = Summary_Table_Row + 1
+            
+                
+            'Reset the TotalStockVol, SumOpening,SumClosing because we're moving to new ticker to count
+            TotalStockVol = 0
+            SumOpening = 0
+            SumClosing = 0
+            TickerCount = 0
+            
+        'if the next ticker is the same as the previous then...
+        Else
+        
+            'keep adding to the total stock volume, SumOpening, and Sumclosing of the ticker
+            TotalStockVol = TotalStockVol + ws.Cells(i, 7).Value
+            SumOpening = SumOpening + ws.Cells(i, 3).Value
+            SumClosing = SumClosing + ws.Cells(i, 6).Value
+            TickerCount = TickerCount + 1
+        
+            
+        End If
+        
+    Next i
+            
+    
+    For i = 2 To LastRow
+    
+        If ws.Cells(i, 10).Value < 0 Then
+            ws.Cells(i, 10).Interior.ColorIndex = 3
+        Else
+            ws.Cells(i, 10).Interior.ColorIndex = 4
+        
+        End If
+    Next i
+    
+    
+    
+    '-----------------------------------
+    'ADD IN CHAT FOR GREATEST% INCREASE, DECREASE, AND GREATEST TOTAL VOLUME
+    '-----------------------------------
+    
+   'Create title cells for Greatest% Increase, Decrease, and Greatest total vol
+    'ticker in one column and value in the next
+    ws.Range("O2").Value = "Greatest % Increase"
+    ws.Range("O3").Value = "Greatest % Decrease"
+    ws.Range("O4").Value = "Greatest Total Volume"
+    ws.Range("P1").Value = "Ticker"
+    ws.Range("Q1").Value = "Value"
+    
+    
+    'Create a greatest increase variable
+    Dim GreatestIncrease As Double
+    GreatestIncrease = ws.Range("K2").Value
+    
+    'Create greatest decrease
+    Dim GreatestDecrease As Double
+    GreatestDecrease = ws.Range("K2").Value
+    
+    'create greatest total volume variable
+    Dim GreatestVol As Double
+    GreatestVol = ws.Range("L2").Value
+    
+    'loop through column K and find the biggest increase
+    For i = 2 To LastRow
+        
+        
+        If ws.Cells(i, 11).Value > GreatestIncrease Then
+            GreatestIncrease = ws.Cells(i, 11).Value
+            
+            ws.Range("Q2").Value = GreatestIncrease
+            ws.Range("P2").Value = Cells(i, 9).Value
+            
+        End If
+        
+    Next i
+    
+    'loop through and find biggest decrease
+    For i = 2 To LastRow
+        
+        If ws.Cells(i, 11).Value < GreatestDecrease Then
+            GreatestDecrease = ws.Cells(i, 11).Value
+            
+            ws.Range("Q3").Value = GreatestDecrease
+            ws.Range("P3").Value = Cells(i, 9).Value
+    
+        End If
+        
+    Next i
+
+
+    'loop through and find greatest volume
+    For i = 2 To LastRow
+        
+        If ws.Cells(i, 12).Value > GreatestVol Then
+            GreatestVol = ws.Cells(i, 12).Value
+    
+            ws.Range("Q4").Value = GreatestVol
+            ws.Range("P4").Value = Cells(i, 9).Value
+            
+        End If
+        
+    Next i
+    
+  Next ws
+  
+End Sub
